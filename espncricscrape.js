@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer');
 
-const BASE_URL = "https://www.espncricinfo.com/series/afghanistan-v-bangladesh-2025-26-1500384/afghanistan-vs-bangladesh-2nd-t20i-1500391/ball-by-ball-commentary"
+const BASE_URL = "https://www.espncricinfo.com/series/sheffield-shield-2025-26-1495274/western-australia-vs-new-south-wales-3rd-match-1495281/live-cricket-score"
 
 
 function sleep(ms) {
@@ -38,16 +38,18 @@ async function main() {
                 const data_div1 = data_div.querySelector('div')
                 const data_div2 = data_div1.querySelector('div')
                 const data_div3 = data_div2.querySelector('div')
-                const data_div4 = data_div3.querySelectorAll(':scope > div')
-                const inner_data = data_div4[1]
-                const inner_data1 = inner_data.querySelector('div')
-                const inner_data2 = inner_data1.querySelectorAll('.ci-team-score')
+                // const data_div4 = data_div3.querySelectorAll(':scope > div')
+                // const inner_data = data_div4[0]
+                // const inner_data1 = inner_data.querySelector('div')
+                const inner_data2 = data_div3.querySelectorAll('.ci-team-score')
                 inner_data2.forEach((node, index) => {
+                    console.log('ya pugyo 1')
                     const team_logo = node.querySelector('img').getAttribute('src');
                     const team_name_div = node.querySelectorAll(":scope > div")
-                    if (team_name_div.length >= 2) {
+                    if (team_name_div.length >= 1) {
+                        console.log('ya pugyo 2')
                         const team_name = team_name_div[0].textContent
-                        const team_score = team_name_div[1].textContent
+                        const team_score = team_name_div[1]?.textContent
                         match_team_data.push({ team_logo, team_name, team_score })
                     }
                 })
@@ -58,6 +60,8 @@ async function main() {
             } else {
                 return "Not enough div children";
             }
+
+            return children[0].innerHTML;
         });
         console.log(inner);
     } catch (err) {
