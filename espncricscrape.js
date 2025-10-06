@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer');
 
-const BASE_URL = "https://www.espncricinfo.com/series/sheffield-shield-2025-26-1495274/western-australia-vs-new-south-wales-3rd-match-1495281/live-cricket-score"
+const BASE_URL = "https://www.espncricinfo.com/series/west-indies-in-india-2025-26-1479561/india-vs-west-indies-1st-test-1479569/ball-by-ball-commentary"
 
 
 function sleep(ms) {
@@ -21,18 +21,85 @@ async function main() {
         await page.waitForSelector("#main-container", { timeout: 60000 })
         const pEl = await page.$("#main-container")
         const level_one_div = await pEl.$('#main-container > div:nth-of-type(5)')
-        const inner = await level_one_div.evaluate((el) => {
+        const match_data = await level_one_div.evaluate((el) => {
             const level_two_div = el.querySelector("div")
             const level_three_div = level_two_div.querySelector("div")
             const level_four_div = level_three_div.querySelector("div:nth-of-type(3)")
             const level_five_div = level_four_div.querySelector("div")
             const title_cmntry = level_five_div.querySelector('h1')
             const match_summary_wrap = level_five_div.querySelector("div")
+            const match_commentry = level_five_div.querySelectorAll(":scope > div")
+            const commentry_data = []
+            let match_overall_data = {}
+            let match_team_data = []
+            if (match_commentry.length >= 2) {
+                const match_commentry_lvl1 = match_commentry[1]
+                const match_commentry_lvl2 = match_commentry_lvl1.querySelector("div")
+                const match_commentry_lvl2_childs = match_commentry_lvl2.querySelectorAll(":scope > div")
+                if (match_commentry_lvl2_childs.length >= 2) {
+                    const match_commentry_lvl3 = match_commentry_lvl2_childs[1]
+                    const match_commentry_lvl4 = match_commentry_lvl3.querySelector('div')
+                    const match_commentry_lvl5 = match_commentry_lvl4.querySelector('div')
+                    const match_commentry_lvl6 = match_commentry_lvl5.querySelectorAll(":scope > div")
+                    if (match_commentry_lvl6.length > 0) {
+                        match_commentry_lvl6.forEach((comment, index) => {
+                            const single_comment = comment.querySelector('div')
+                            const single_comment_divs = single_comment.querySelectorAll('div')
+                            let over_class_list = ''
+                            let end_of_over_txt = ''
+                            let end_of_over_runs = ''
+                            let over_summary_lvl3_rem_runs = ''
+                            let over_summary_lvl3_runs = ''
+                            if (single_comment_divs.length > 1) {
+                                over_class_list = single_comment_divs[0].className
+                                if (over_class_list == '') {
+                                    const over_summary = single_comment_divs[0]
+                                    const over_summary_childs = over_summary.querySelectorAll(":scope > div")
+                                    if (over_summary_childs.length >= 3) {
+                                        const over_summary_wrap = over_summary_childs[2]
+                                        const over_summary_wrap_lvl1 = over_summary_wrap.querySelector('div')
+                                        const over_summary_wrap_lvl1_divs = over_summary_wrap_lvl1.querySelectorAll(":scope > div")
+                                        if (over_summary_wrap_lvl1_divs.length >= 2) {
+                                            const over_summary_lvl2 = over_summary_wrap_lvl1_divs[0]
+                                            const over_summary_lvl2_divs = over_summary_lvl2.querySelectorAll(":scope > div")
+                                            if (over_summary_lvl2_divs.length >= 2) {
+                                                const over_summary_lvl3 = over_summary_lvl2_divs[0]
+                                                const over_summary_lvl3_runs_stat = over_summary_lvl2_divs[1]
+                                                const over_summary_lvl3_runs_stat_spans = over_summary_lvl3_runs_stat.querySelectorAll(":scope > span")
+                                                over_summary_lvl3_runs = over_summary_lvl3_runs_stat_spans.length > 0 ? over_summary_lvl3_runs_stat_spans[0].textContent : ''
+                                                over_summary_lvl3_rem_runs = over_summary_lvl3_runs_stat_spans.length > 1 ? over_summary_lvl3_runs_stat_spans[1].textContent : ''
+                                                const over_summary_lvl3_spans = over_summary_lvl3.querySelectorAll(":scope > span")
+                                                if (over_summary_lvl3_spans.length >= 2) {
+                                                    end_of_over_txt = over_summary_lvl3_spans[0].textContent
+                                                    end_of_over_runs = over_summary_lvl3_spans[1].textContent
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                            }
+                            const single_comment_lvl1 = single_comment.querySelector(':scope > .ds-hover-parent')
+                            const single_comment_lvl2 = single_comment_lvl1.querySelector('div')
+                            const single_comment_lvl2_divs = single_comment_lvl2.querySelectorAll(':scope > div')
+                            const single_comment_lvl2_over_div =
+                                single_comment_lvl2_divs.length > 0 ? single_comment_lvl2_divs[0] : null;
+
+                            const single_comment_lvl2_over_n_div = single_comment_lvl2_over_div.querySelector(":scope > span").textContent
+                            const single_comment_lvl2_over_score_div = single_comment_lvl2_over_div.querySelector(":scope >div span").textContent
+
+                            const single_comment_lvl2_comment_div =
+                                single_comment_lvl2_divs.length > 1 ? single_comment_lvl2_divs[1].textContent : null;
+                            commentry_data.push({ over_summary_lvl3_rem_runs, over_summary_lvl3_runs, end_of_over_txt, end_of_over_runs, over_class_list, single_comment_lvl2_over_n_div, single_comment_lvl2_over_score_div, single_comment_lvl2_comment_div })
+                        })
+                    }
+                }
+
+            }
             const match_summary_wrap_lvl1 = match_summary_wrap.querySelector("div")
             const match_summary_wrap_lvl2 = match_summary_wrap_lvl1.querySelector("div")
             const children = match_summary_wrap_lvl2.querySelectorAll(":scope > div");
-            let match_overall_data = {}
-            let match_team_data = []
+
             if (children.length >= 2) {
                 const data_div = children[1]
                 const data_div1 = data_div.querySelector('div')
@@ -56,14 +123,16 @@ async function main() {
                 const match_summary_text = data_div3.querySelector('p').textContent
                 match_overall_data['match_summary_text'] = match_summary_text
                 match_overall_data['match_team_data'] = match_team_data
-                return match_overall_data
             } else {
                 return "Not enough div children";
             }
 
-            return children[0].innerHTML;
+            match_overall_data['commentry_data'] = commentry_data
+
+            return match_overall_data
+
         });
-        console.log(inner);
+        console.log(match_data);
     } catch (err) {
         console.error('Scrape error:', err);
     } finally {
