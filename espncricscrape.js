@@ -8,6 +8,140 @@ function sleep(ms) {
 }
 
 
+
+async function getMatchSummary(page_elem) {
+    const match_data = await page_elem.evaluate((el) => {
+        let match_overall_data = {}
+        let match_team_data = []
+        const match_summary_wrap = el.querySelector("div")
+
+        const match_summary_wrap_lvl1 = match_summary_wrap.querySelector("div")
+        const match_summary_wrap_lvl2 = match_summary_wrap_lvl1.querySelector("div")
+        const children = match_summary_wrap_lvl2.querySelectorAll(":scope > div");
+
+        if (children.length >= 2) {
+            const data_div = children[1]
+            const data_div1 = data_div.querySelector('div')
+
+
+            const data_div2 = data_div1.querySelector('div')
+            const data_div3 = data_div2.querySelector('div')
+
+            const inner_data2 = data_div3.querySelectorAll('.ci-team-score')
+
+            inner_data2.forEach((node, index) => {
+                const team_logo = node.querySelector('img').getAttribute('src');
+                const team_name_div = node.querySelectorAll(":scope > div")
+                if (team_name_div.length >= 1) {
+                    const team_name = team_name_div[0].textContent
+                    const team_score = team_name_div[1]?.textContent
+                    match_team_data.push({ team_logo, team_name, team_score })
+                }
+            })
+            const match_summary_text = data_div3.querySelector('p').textContent
+            match_overall_data['match_summary_text'] = match_summary_text
+            match_overall_data['match_team_data'] = match_team_data
+        } else {
+            return "Not enough div children";
+        }
+
+        return match_overall_data
+    })
+
+    return match_data
+}
+
+
+
+async function getDeliveryList(page_elem) {
+
+    // const match_commentry = page_elem.querySelectorAll(":scope > div")
+
+    // if (match_commentry.length >= 2) {
+
+
+    // go upto the parent div with seleing all the div inside list. we can use lenght on this result
+
+    // we will initialite two var, one is empty array and another is integer
+
+    // then use while true and inside this we will get the list and  if initializedd array lenght is  == 
+    // current lenght of list then inside we again check if initialled inter is > 3 break else interger ++
+    // else put current result in initileds array and then get last Element, scrolll to that view and wait for 5 seconds to load 
+
+    const match_data = await page_elem.evaluate((el) => {
+        const match_commentry = el.querySelectorAll(":scope > div")
+        const commentry_data = []
+        let match_overall_data = {}
+        if (match_commentry.length >= 2) {
+            const match_commentry_lvl1 = match_commentry[1]
+            const match_commentry_lvl2 = match_commentry_lvl1.querySelector("div")
+            const match_commentry_lvl2_childs = match_commentry_lvl2.querySelectorAll(":scope > div")
+            if (match_commentry_lvl2_childs.length >= 2) {
+                const match_commentry_lvl3 = match_commentry_lvl2_childs[1]
+                const match_commentry_lvl4 = match_commentry_lvl3.querySelector('div')
+                const match_commentry_lvl5 = match_commentry_lvl4.querySelector('div')
+                const match_commentry_lvl6 = match_commentry_lvl5.querySelectorAll(":scope > div")
+                if (match_commentry_lvl6.length > 0) {
+                    match_commentry_lvl6.forEach((comment, index) => {
+                        const single_comment = comment.querySelector('div')
+                        const single_comment_divs = single_comment.querySelectorAll('div')
+                        let over_class_list = ''
+                        let end_of_over_txt = ''
+                        let end_of_over_runs = ''
+                        let over_summary_lvl3_rem_runs = ''
+                        let over_summary_lvl3_runs = ''
+                        if (single_comment_divs.length > 1) {
+                            over_class_list = single_comment_divs[0].className
+                            if (over_class_list == '') {
+                                const over_summary = single_comment_divs[0]
+                                const over_summary_childs = over_summary.querySelectorAll(":scope > div")
+                                if (over_summary_childs.length >= 3) {
+                                    const over_summary_wrap = over_summary_childs[2]
+                                    const over_summary_wrap_lvl1 = over_summary_wrap.querySelector('div')
+                                    const over_summary_wrap_lvl1_divs = over_summary_wrap_lvl1.querySelectorAll(":scope > div")
+                                    if (over_summary_wrap_lvl1_divs.length >= 2) {
+                                        const over_summary_lvl2 = over_summary_wrap_lvl1_divs[0]
+                                        const over_summary_lvl2_divs = over_summary_lvl2.querySelectorAll(":scope > div")
+                                        if (over_summary_lvl2_divs.length >= 2) {
+                                            const over_summary_lvl3 = over_summary_lvl2_divs[0]
+                                            const over_summary_lvl3_runs_stat = over_summary_lvl2_divs[1]
+                                            const over_summary_lvl3_runs_stat_spans = over_summary_lvl3_runs_stat.querySelectorAll(":scope > span")
+                                            over_summary_lvl3_runs = over_summary_lvl3_runs_stat_spans.length > 0 ? over_summary_lvl3_runs_stat_spans[0].textContent : ''
+                                            over_summary_lvl3_rem_runs = over_summary_lvl3_runs_stat_spans.length > 1 ? over_summary_lvl3_runs_stat_spans[1].textContent : ''
+                                            const over_summary_lvl3_spans = over_summary_lvl3.querySelectorAll(":scope > span")
+                                            if (over_summary_lvl3_spans.length >= 2) {
+                                                end_of_over_txt = over_summary_lvl3_spans[0].textContent
+                                                end_of_over_runs = over_summary_lvl3_spans[1].textContent
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        const single_comment_lvl1 = single_comment.querySelector(':scope > .ds-hover-parent')
+                        const single_comment_lvl2 = single_comment_lvl1.querySelector('div')
+                        const single_comment_lvl2_divs = single_comment_lvl2.querySelectorAll(':scope > div')
+                        const single_comment_lvl2_over_div =
+                            single_comment_lvl2_divs.length > 0 ? single_comment_lvl2_divs[0] : null;
+
+                        const single_comment_lvl2_over_n_div = single_comment_lvl2_over_div.querySelector(":scope > span").textContent
+                        const single_comment_lvl2_over_score_div = single_comment_lvl2_over_div.querySelector(":scope >div span").textContent
+
+                        const single_comment_lvl2_comment_div =
+                            single_comment_lvl2_divs.length > 1 ? single_comment_lvl2_divs[1].textContent : null;
+                        commentry_data.push({ over_summary_lvl3_rem_runs, over_summary_lvl3_runs, end_of_over_txt, end_of_over_runs, over_class_list, single_comment_lvl2_over_n_div, single_comment_lvl2_over_score_div, single_comment_lvl2_comment_div })
+                    })
+                }
+            }
+        }
+        match_overall_data['commentry_data'] = commentry_data
+        return match_overall_data
+    });
+
+    return match_data
+}
+
+
 async function main() {
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
@@ -21,118 +155,20 @@ async function main() {
         await page.waitForSelector("#main-container", { timeout: 60000 })
         const pEl = await page.$("#main-container")
         const level_one_div = await pEl.$('#main-container > div:nth-of-type(5)')
-        const match_data = await level_one_div.evaluate((el) => {
-            const level_two_div = el.querySelector("div")
-            const level_three_div = level_two_div.querySelector("div")
-            const level_four_div = level_three_div.querySelector("div:nth-of-type(3)")
-            const level_five_div = level_four_div.querySelector("div")
-            const title_cmntry = level_five_div.querySelector('h1')
-            const match_summary_wrap = level_five_div.querySelector("div")
-            const match_commentry = level_five_div.querySelectorAll(":scope > div")
-            const commentry_data = []
-            let match_overall_data = {}
-            let match_team_data = []
-            if (match_commentry.length >= 2) {
-                const match_commentry_lvl1 = match_commentry[1]
-                const match_commentry_lvl2 = match_commentry_lvl1.querySelector("div")
-                const match_commentry_lvl2_childs = match_commentry_lvl2.querySelectorAll(":scope > div")
-                if (match_commentry_lvl2_childs.length >= 2) {
-                    const match_commentry_lvl3 = match_commentry_lvl2_childs[1]
-                    const match_commentry_lvl4 = match_commentry_lvl3.querySelector('div')
-                    const match_commentry_lvl5 = match_commentry_lvl4.querySelector('div')
-                    const match_commentry_lvl6 = match_commentry_lvl5.querySelectorAll(":scope > div")
-                    if (match_commentry_lvl6.length > 0) {
-                        match_commentry_lvl6.forEach((comment, index) => {
-                            const single_comment = comment.querySelector('div')
-                            const single_comment_divs = single_comment.querySelectorAll('div')
-                            let over_class_list = ''
-                            let end_of_over_txt = ''
-                            let end_of_over_runs = ''
-                            let over_summary_lvl3_rem_runs = ''
-                            let over_summary_lvl3_runs = ''
-                            if (single_comment_divs.length > 1) {
-                                over_class_list = single_comment_divs[0].className
-                                if (over_class_list == '') {
-                                    const over_summary = single_comment_divs[0]
-                                    const over_summary_childs = over_summary.querySelectorAll(":scope > div")
-                                    if (over_summary_childs.length >= 3) {
-                                        const over_summary_wrap = over_summary_childs[2]
-                                        const over_summary_wrap_lvl1 = over_summary_wrap.querySelector('div')
-                                        const over_summary_wrap_lvl1_divs = over_summary_wrap_lvl1.querySelectorAll(":scope > div")
-                                        if (over_summary_wrap_lvl1_divs.length >= 2) {
-                                            const over_summary_lvl2 = over_summary_wrap_lvl1_divs[0]
-                                            const over_summary_lvl2_divs = over_summary_lvl2.querySelectorAll(":scope > div")
-                                            if (over_summary_lvl2_divs.length >= 2) {
-                                                const over_summary_lvl3 = over_summary_lvl2_divs[0]
-                                                const over_summary_lvl3_runs_stat = over_summary_lvl2_divs[1]
-                                                const over_summary_lvl3_runs_stat_spans = over_summary_lvl3_runs_stat.querySelectorAll(":scope > span")
-                                                over_summary_lvl3_runs = over_summary_lvl3_runs_stat_spans.length > 0 ? over_summary_lvl3_runs_stat_spans[0].textContent : ''
-                                                over_summary_lvl3_rem_runs = over_summary_lvl3_runs_stat_spans.length > 1 ? over_summary_lvl3_runs_stat_spans[1].textContent : ''
-                                                const over_summary_lvl3_spans = over_summary_lvl3.querySelectorAll(":scope > span")
-                                                if (over_summary_lvl3_spans.length >= 2) {
-                                                    end_of_over_txt = over_summary_lvl3_spans[0].textContent
-                                                    end_of_over_runs = over_summary_lvl3_spans[1].textContent
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
 
-                            }
-                            const single_comment_lvl1 = single_comment.querySelector(':scope > .ds-hover-parent')
-                            const single_comment_lvl2 = single_comment_lvl1.querySelector('div')
-                            const single_comment_lvl2_divs = single_comment_lvl2.querySelectorAll(':scope > div')
-                            const single_comment_lvl2_over_div =
-                                single_comment_lvl2_divs.length > 0 ? single_comment_lvl2_divs[0] : null;
+        const level_two_div = await level_one_div.$("div")
+        const level_three_div = await level_two_div.$("div")
+        const level_four_div = await level_three_div.$("div:nth-of-type(3)")
+        const level_five_div = await level_four_div.$("div")
 
-                            const single_comment_lvl2_over_n_div = single_comment_lvl2_over_div.querySelector(":scope > span").textContent
-                            const single_comment_lvl2_over_score_div = single_comment_lvl2_over_div.querySelector(":scope >div span").textContent
+        const match_summary = await getMatchSummary(level_five_div)
+        await sleep(5000);
 
-                            const single_comment_lvl2_comment_div =
-                                single_comment_lvl2_divs.length > 1 ? single_comment_lvl2_divs[1].textContent : null;
-                            commentry_data.push({ over_summary_lvl3_rem_runs, over_summary_lvl3_runs, end_of_over_txt, end_of_over_runs, over_class_list, single_comment_lvl2_over_n_div, single_comment_lvl2_over_score_div, single_comment_lvl2_comment_div })
-                        })
-                    }
-                }
+        const match_delivery_arr = await getDeliveryList(level_five_div)
 
-            }
-            const match_summary_wrap_lvl1 = match_summary_wrap.querySelector("div")
-            const match_summary_wrap_lvl2 = match_summary_wrap_lvl1.querySelector("div")
-            const children = match_summary_wrap_lvl2.querySelectorAll(":scope > div");
-
-            if (children.length >= 2) {
-                const data_div = children[1]
-                const data_div1 = data_div.querySelector('div')
-                const data_div2 = data_div1.querySelector('div')
-                const data_div3 = data_div2.querySelector('div')
-                // const data_div4 = data_div3.querySelectorAll(':scope > div')
-                // const inner_data = data_div4[0]
-                // const inner_data1 = inner_data.querySelector('div')
-                const inner_data2 = data_div3.querySelectorAll('.ci-team-score')
-                inner_data2.forEach((node, index) => {
-                    console.log('ya pugyo 1')
-                    const team_logo = node.querySelector('img').getAttribute('src');
-                    const team_name_div = node.querySelectorAll(":scope > div")
-                    if (team_name_div.length >= 1) {
-                        console.log('ya pugyo 2')
-                        const team_name = team_name_div[0].textContent
-                        const team_score = team_name_div[1]?.textContent
-                        match_team_data.push({ team_logo, team_name, team_score })
-                    }
-                })
-                const match_summary_text = data_div3.querySelector('p').textContent
-                match_overall_data['match_summary_text'] = match_summary_text
-                match_overall_data['match_team_data'] = match_team_data
-            } else {
-                return "Not enough div children";
-            }
-
-            match_overall_data['commentry_data'] = commentry_data
-
-            return match_overall_data
-
-        });
-        console.log(match_data);
+        match_delivery_arr['match_sum'] = match_summary
+        console.log(match_delivery_arr);
+        // console.log(JSON.stringify(match_delivery_arr, null, 2));
     } catch (err) {
         console.error('Scrape error:', err);
     } finally {
