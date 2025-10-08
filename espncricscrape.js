@@ -139,7 +139,7 @@ async function getDeliveryList(page_elem) {
             if (!match_commentry_lvlp.length) return;
             let final_data = []
             while (true) {
-                const abcd = await match_commentry_lvl5.evaluate((el) => {
+                const commentry_count = await match_commentry_lvl5.evaluate((el) => {
                     const children = el.querySelectorAll(':scope > div');
                     const last = children[children.length - 1];
                     if (!last) return false;
@@ -159,7 +159,7 @@ async function getDeliveryList(page_elem) {
                     return children.length
                 });
 
-                if (abcd === commentry_list) {
+                if (commentry_count === commentry_list) {
                     if (stable_itr > 3) {
                         final_data = await getCommentryData(match_commentry_lvl5)
 
@@ -167,7 +167,7 @@ async function getDeliveryList(page_elem) {
                     }
                     stable_itr++
                 } else {
-                    commentry_list = abcd
+                    commentry_list = commentry_count
                 }
 
                 await sleep(10000);
